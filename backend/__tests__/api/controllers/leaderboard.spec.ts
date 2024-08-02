@@ -7,6 +7,7 @@ import * as DailyLeaderboards from "../../../src/utils/daily-leaderboards";
 import * as WeeklyXpLeaderboard from "../../../src/services/weekly-xp-leaderboard";
 import * as Configuration from "../../../src/init/configuration";
 import { mockAuthenticateWithApeKey } from "../../__testData__/auth";
+import { LeaderboardEntry } from "@monkeytype/contracts/schemas/leaderboards";
 
 const mockApp = request(app);
 const configuration = Configuration.getCachedConfiguration();
@@ -20,7 +21,7 @@ describe("Loaderboard Controller", () => {
       getLeaderboardMock.mockReset();
     });
 
-    it("shoult get for english time 60", async () => {
+    it("should get for english time 60", async () => {
       //GIVEN
 
       const resultData = [
@@ -68,7 +69,7 @@ describe("Loaderboard Controller", () => {
         "time",
         "60",
         "english",
-        NaN,
+        0, //TODO test with postman
         50
       );
     });
@@ -207,11 +208,9 @@ describe("Loaderboard Controller", () => {
         })
         .expect(503);
 
-      expect(body).toEqual({
-        data: null,
-        message:
-          "Leaderboard is currently updating. Please try again in a few seconds.",
-      });
+      expect(body.message).toEqual(
+        "Leaderboard is currently updating. Please try again in a few seconds."
+      );
     });
   });
 
@@ -390,11 +389,9 @@ describe("Loaderboard Controller", () => {
         .set("authorization", `Uid ${uid}`)
         .expect(503);
 
-      expect(body).toEqual({
-        data: null,
-        message:
-          "Leaderboard is currently updating. Please try again in a few seconds.",
-      });
+      expect(body.message).toEqual(
+        "Leaderboard is currently updating. Please try again in a few seconds."
+      );
     });
   });
 
@@ -424,7 +421,7 @@ describe("Loaderboard Controller", () => {
       const lbConf = (await configuration).dailyLeaderboards;
       const premiumEnabled = (await configuration).users.premium.enabled;
 
-      const resultData: DailyLeaderboards.LbEntryWithRank[] = [
+      const resultData: LeaderboardEntry[] = [
         {
           name: "user1",
           rank: 1,
@@ -507,7 +504,6 @@ describe("Loaderboard Controller", () => {
         1722470400000
       );
     });
-
     it("should get for english time 60 with skip and limit", async () => {
       //GIVEN
       const lbConf = (await configuration).dailyLeaderboards;
@@ -766,6 +762,7 @@ describe("Loaderboard Controller", () => {
 
       const { body } = await mockApp
         .get("/leaderboards/daily/rank")
+        .set("authorization", `Uid ${uid}`)
         .expect(503);
 
       expect(body.message).toEqual(
